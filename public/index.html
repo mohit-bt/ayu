@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dr. Ayurveda - Natural Healing Products</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'ayur-green': '#4A7C59',
+                        'ayur-light-green': '#6FAF7C',
+                        'ayur-beige': '#F5E6D3',
+                        'ayur-brown': '#8B4513',
+                        'ayur-gold': '#DAA520'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .leaf-pattern {
+            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M20,50 Q50,20 80,50 Q50,80 20,50" fill="%234A7C59" opacity="0.1"/></svg>');
+            background-size: 60px 60px;
+        }
+    </style>
+</head>
+<body class="bg-ayur-beige min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-lg sticky top-0 z-50">
+        <nav class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <div class="w-12 h-12 bg-ayur-green rounded-full flex items-center justify-center brand-logo">
+                        <span class="text-white font-bold text-xl">🌿</span>
+                    </div>
+                    <h1 class="text-2xl font-bold text-ayur-green brand-name">Dr. Ayurveda</h1>
+                </div>
+                <div class="hidden md:flex space-x-6">
+                    <a href="#home" class="text-ayur-green hover:text-ayur-light-green transition">Home</a>
+                    <a href="#doctor" class="text-ayur-green hover:text-ayur-light-green transition">About Doctor</a>
+                    <a href="#products" class="text-ayur-green hover:text-ayur-light-green transition">Products</a>
+                    <a href="#contact" class="text-ayur-green hover:text-ayur-light-green transition">Contact</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="home" class="leaf-pattern py-20">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-4xl md:text-6xl font-bold text-ayur-green mb-6 hero-title">
+                Dr. Ayurveda
+            </h2>
+            <p class="text-xl text-ayur-brown mb-8 max-w-2xl mx-auto hero-subtitle">
+                Discover the power of traditional Ayurvedic medicine with our carefully crafted herbal products and treatments.
+            </p>
+            <a href="#products" class="bg-ayur-green text-white px-8 py-3 rounded-lg text-lg hover:bg-ayur-light-green transition transform hover:scale-105">
+                Explore Products
+            </a>
+        </div>
+    </section>
+
+    <!-- Doctor Profile Section -->
+    <section id="doctor" class="py-20 bg-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center text-ayur-green mb-12">Meet Your Ayurvedic Specialist</h2>
+            <div class="max-w-4xl mx-auto" id="doctor-profile">
+                <!-- Doctor profile will be loaded here -->
+                <div class="text-center">
+                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-ayur-green"></div>
+                    <p class="mt-2 text-ayur-brown">Loading doctor information...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Products Section -->
+    <section id="products" class="py-20 bg-ayur-beige">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center text-ayur-green mb-12">Our Ayurvedic Products</h2>
+            <div id="products-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Products will be loaded here -->
+                <div class="col-span-full text-center">
+                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-ayur-green"></div>
+                    <p class="mt-2 text-ayur-brown">Loading products...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-20 bg-ayur-green text-white">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-3xl font-bold mb-8">Get in Touch</h2>
+            <div class="max-w-2xl mx-auto">
+                <p class="text-xl mb-6">Ready to start your journey to natural wellness?</p>
+                <div id="contact-info" class="space-y-4">
+                    <!-- Contact info will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-ayur-brown text-white py-8">
+        <div class="container mx-auto px-4 text-center">
+            <div class="flex items-center justify-center space-x-2 mb-4">
+                <div class="w-8 h-8 bg-white rounded-full flex items-center justify-center brand-logo">
+                    <span class="text-ayur-green">🌿</span>
+                </div>
+                <h3 class="text-xl font-bold brand-name">Dr. Ayurveda</h3>
+            </div>
+            <p class="text-sm opacity-75">
+                © 2025 <span class="brand-name">Dr. Ayurveda</span>. All rights reserved. | Natural healing through traditional Ayurvedic medicine.
+            </p>
+        </div>
+    </footer>
+
+    <!-- Product Modal -->
+    <div id="product-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-lg max-w-2xl w-full max-h-screen overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-start mb-4">
+                    <h3 id="modal-title" class="text-2xl font-bold text-ayur-green"></h3>
+                    <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700 text-xl">&times;</button>
+                </div>
+                <div id="modal-content">
+                    <!-- Product details will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Load brand settings for header and hero section
+        async function loadBrandSettings() {
+            try {
+                const response = await fetch('/api/brand');
+                const brand = await response.json();
+                
+                // Update header brand name
+                const brandNameElements = document.querySelectorAll('.brand-name');
+                brandNameElements.forEach(el => {
+                    el.textContent = brand.name || 'Dr. Ayurveda';
+                });
+                
+                // Update hero title with brand name
+                const heroTitle = document.querySelector('.hero-title');
+                if (heroTitle) {
+                    heroTitle.textContent = brand.name || 'Dr. Ayurveda';
+                }
+                
+                // Update header logo if exists
+                if (brand.logo) {
+                    const logoElements = document.querySelectorAll('.brand-logo');
+                    logoElements.forEach(el => {
+                        el.innerHTML = `<img src="${brand.logo}" alt="${brand.name}" class="w-full h-full object-cover rounded-full">`;
+                    });
+                }
+                
+                // Update hero section tagline if exists
+                if (brand.tagline) {
+                    const heroSubtitle = document.querySelector('.hero-subtitle');
+                    if (heroSubtitle) {
+                        heroSubtitle.textContent = brand.tagline;
+                    }
+                } else {
+                    // Default tagline if none set
+                    const heroSubtitle = document.querySelector('.hero-subtitle');
+                    if (heroSubtitle) {
+                        heroSubtitle.textContent = 'Discover the power of traditional Ayurvedic medicine with our carefully crafted herbal products and treatments.';
+                    }
+                }
+                
+                // Update page title
+                document.title = `${brand.name || 'Dr. Ayurveda'} - Natural Healing Products`;
+            } catch (error) {
+                console.error('Error loading brand settings:', error);
+            }
+        }
+        async function loadDoctorProfile() {
+            try {
+                const response = await fetch('/api/doctor');
+                const doctor = await response.json();
+                
+                const profileHTML = `
+                    <div class="flex flex-col md:flex-row items-center gap-8">
+                        <div class="w-48 h-48 ${doctor.photo ? '' : 'bg-ayur-green'} rounded-full flex items-center justify-center ${doctor.photo ? '' : 'text-6xl text-white'}">
+                            ${doctor.photo ? 
+                                `<img src="${doctor.photo}" alt="${doctor.name}" class="w-full h-full object-cover rounded-full">` :
+                                `👩‍⚕️`
+                            }
+                        </div>
+                        <div class="flex-1 text-center md:text-left">
+                            <h3 class="text-2xl font-bold text-ayur-green mb-2">${doctor.name}</h3>
+                            <p class="text-ayur-brown mb-4">${doctor.bio}</p>
+                            <div class="space-y-2 text-ayur-brown">
+                                <p><strong>📞 Phone:</strong> <a href="tel:${doctor.contact}" class="text-ayur-green hover:underline hover:text-ayur-light-green transition">${doctor.contact}</a></p>
+                                <p><strong>✉️ Email:</strong> <a href="mailto:${doctor.email}" class="text-ayur-green hover:underline hover:text-ayur-light-green transition">${doctor.email}</a></p>
+                                <p><strong>📍 Address:</strong> <a href="https://maps.google.com/?q=${encodeURIComponent(doctor.address)}" target="_blank" class="text-ayur-green hover:underline hover:text-ayur-light-green transition">${doctor.address}</a></p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                document.getElementById('doctor-profile').innerHTML = profileHTML;
+                
+                // Update contact section
+                const contactHTML = `
+                    <div class="bg-white bg-opacity-10 rounded-lg p-6">
+                        <h4 class="text-xl font-bold mb-4">Contact Information</h4>
+                        <div class="space-y-2">
+                            <p><strong>📞 Call:</strong> <a href="tel:${doctor.contact}" class="underline hover:no-underline text-white hover:text-ayur-beige transition">${doctor.contact}</a></p>
+                            <p><strong>✉️ Email:</strong> <a href="mailto:${doctor.email}" class="underline hover:no-underline text-white hover:text-ayur-beige transition">${doctor.email}</a></p>
+                            <p><strong>📍 Visit:</strong> <a href="https://maps.google.com/?q=${encodeURIComponent(doctor.address)}" target="_blank" class="underline hover:no-underline text-white hover:text-ayur-beige transition">${doctor.address}</a></p>
+                        </div>
+                    </div>
+                `;
+                document.getElementById('contact-info').innerHTML = contactHTML;
+            } catch (error) {
+                console.error('Error loading doctor profile:', error);
+                document.getElementById('doctor-profile').innerHTML = '<p class="text-red-500 text-center">Error loading doctor information.</p>';
+            }
+        }
+
+        // Load products
+        async function loadProducts() {
+            try {
+                const response = await fetch('/api/products');
+                const products = await response.json();
+                
+                if (products.length === 0) {
+                    document.getElementById('products-grid').innerHTML = `
+                        <div class="col-span-full text-center py-12">
+                            <div class="text-6xl mb-4">🌿</div>
+                            <h3 class="text-xl font-bold text-ayur-green mb-2">No Products Available</h3>
+                            <p class="text-ayur-brown">Products will appear here once the doctor adds them.</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const productsHTML = products.map(product => `
+                    <div class="bg-white rounded-lg shadow-lg overflow-hidden transform hover:scale-105 transition cursor-pointer" onclick="openProductModal('${product._id}')">
+                        <div class="h-48 bg-ayur-beige flex items-center justify-center">
+                            ${product.image ? 
+                                `<img src="${product.image}" alt="${product.name}" class="w-full h-full object-cover">` :
+                                `<div class="text-4xl text-ayur-green">🌿</div>`
+                            }
+                        </div>
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold text-ayur-green mb-2">${product.name}</h3>
+                            <p class="text-ayur-brown mb-4 line-clamp-3">${product.description}</p>
+                            ${product.price ? `<p class="text-lg font-bold text-ayur-gold">₹${product.price}</p>` : ''}
+                            <button class="mt-4 w-full bg-ayur-green text-white py-2 rounded hover:bg-ayur-light-green transition">
+                                View Details
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+                
+                document.getElementById('products-grid').innerHTML = productsHTML;
+            } catch (error) {
+                console.error('Error loading products:', error);
+                document.getElementById('products-grid').innerHTML = '<p class="col-span-full text-red-500 text-center">Error loading products.</p>';
+            }
+        }
+
+        // Open product modal
+        async function openProductModal(productId) {
+            try {
+                // Fetch product details
+                const productResponse = await fetch(`/api/products/${productId}`);
+                const product = await productResponse.json();
+                
+                // Fetch doctor contact info
+                const doctorResponse = await fetch('/api/doctor');
+                const doctor = await doctorResponse.json();
+                
+                document.getElementById('modal-title').textContent = product.name;
+                
+                const modalContent = `
+                    <div class="space-y-4">
+                        ${product.image ? `<img src="${product.image}" alt="${product.name}" class="w-full h-64 object-cover rounded">` : ''}
+                        <p class="text-gray-700">${product.description}</p>
+                        ${product.ingredients ? `<div><h4 class="font-bold text-ayur-green">Ingredients:</h4><p class="text-gray-700">${product.ingredients}</p></div>` : ''}
+                        ${product.benefits ? `<div><h4 class="font-bold text-ayur-green">Benefits:</h4><p class="text-gray-700">${product.benefits}</p></div>` : ''}
+                        ${product.usage ? `<div><h4 class="font-bold text-ayur-green">Usage Instructions:</h4><p class="text-gray-700">${product.usage}</p></div>` : ''}
+                        ${product.price ? `<div class="text-2xl font-bold text-ayur-gold mb-4">Price: ₹${product.price}</div>` : ''}
+                        
+                        <!-- Contact Button -->
+                        <div class="bg-ayur-beige rounded-lg p-4 text-center border-2 border-ayur-green">
+                            <h4 class="text-lg font-bold text-ayur-green mb-3">🛒 Wanna buy? Contact here!</h4>
+                            <div class="space-y-2">
+                                <a href="tel:${doctor.contact}" class="inline-flex items-center justify-center bg-ayur-green text-white px-4 py-2 rounded-lg hover:bg-ayur-light-green transition transform hover:scale-105 shadow-lg mr-2">
+                                    <span class="mr-1">📞</span>
+                                    <span class="font-medium">${doctor.contact}</span>
+                                </a>
+                                <a href="mailto:${doctor.email}" class="inline-flex items-center justify-center bg-ayur-brown text-white px-4 py-2 rounded-lg hover:bg-opacity-80 transition transform hover:scale-105 shadow-lg">
+                                    <span class="mr-1">✉️</span>
+                                    <span class="font-medium">${doctor.email}</span>
+                                </a>
+                            </div>
+                            <p class="text-sm text-ayur-brown mt-2">Click to call or email directly</p>
+                        </div>
+                    </div>
+                `;
+                
+                document.getElementById('modal-content').innerHTML = modalContent;
+                document.getElementById('product-modal').classList.remove('hidden');
+                document.getElementById('product-modal').classList.add('flex');
+            } catch (error) {
+                console.error('Error loading product details:', error);
+            }
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('product-modal').classList.add('hidden');
+            document.getElementById('product-modal').classList.remove('flex');
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('product-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // Load content when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadBrandSettings();
+            loadDoctorProfile();
+            loadProducts();
+        });
+    </script>
+</body>
+</html>
