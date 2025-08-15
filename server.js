@@ -3,6 +3,8 @@ const mongoose = require('mongoose');
 const session = require('express-session');
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
+const { uploadToSupabase, deleteFromSupabase } = require('./config/supabase');
 require('dotenv').config();
 
 const app = express();
@@ -12,6 +14,33 @@ const PORT = process.env.PORT || 3000;
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('MongoDB connection error:', err));
+
+// Cleanup function for temporary files
+const cleanupTempFiles = () => {
+  try {
+    if (fs.existsSync(tempUploadsDir)) {
+      const files = fs.readdirSync(tempUploadsDir);
+      const now = Date.now();
+      const maxAge = 60 * 60 * 1000; // 1 hour in milliseconds
+      
+      files.forEach(file => {
+        const filePath = path.join(tempUploadsDir, file);
+        const stats = fs.statSync(filePath);
+        const age = now - stats.mtime.getTime();
+        
+        if (age > maxAge) {
+          fs.unlinkSync(filePath);
+          console.log('Cleaned up old temp file:', file);
+        }
+      });
+    }
+  } catch (error) {
+    console.error('Error during temp file cleanup:', error.message);
+  }
+};
+
+// Run cleanup every hour
+setInterval(cleanupTempFiles, 60 * 60 * 1000);
 
 // Product Schema
 const productSchema = new mongoose.Schema({
@@ -61,7 +90,7 @@ const Admin = mongoose.model('Admin', adminSchema);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
-app.use('/uploads', express.static('uploads'));
+// Note: No local uploads serving - everything is cloud-based
 
 // Session configuration
 app.use(session({
@@ -70,17 +99,46 @@ app.use(session({
   saveUninitialized: false
 }));
 
-// Multer configuration for file uploads
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/')
+// Multer configuration for temporary storage (before cloud upload)
+const tempUploadsDir = path.join(__dirname, 'temp-uploads');
+
+// Ensure temp uploads directory exists
+if (!fs.existsSync(tempUploadsDir)) {
+  fs.mkdirSync(tempUploadsDir, { recursive: true });
+}
+
+// Temporary storage for processing
+const tempStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, tempUploadsDir);
   },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + '-' + file.originalname)
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + path.extname(file.originalname));
   }
 });
 
-const upload = multer({ storage: storage });
+const upload = multer({ 
+  storage: tempStorage,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    console.log('File upload attempted:', {
+      fieldname: file.fieldname,
+      originalname: file.originalname,
+      mimetype: file.mimetype
+    });
+    
+    // Check file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.mimetype)) {
+      return cb(new Error('Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed.'));
+    }
+    
+    cb(null, true);
+  }
+});
 
 // Authentication middleware
 const requireAuth = (req, res, next) => {
@@ -90,6 +148,68 @@ const requireAuth = (req, res, next) => {
     res.redirect('/admin/login');
   }
 };
+
+// Helper function for Supabase image upload
+const uploadToCloud = async (filePath, originalName) => {
+  try {
+    console.log('� Uploading to Supabase Storage...');
+    
+    // Read file as buffer
+    const fileBuffer = fs.readFileSync(filePath);
+    
+    // Upload to Supabase
+    const supabaseUrl = await uploadToSupabase(fileBuffer, originalName, 'products');
+    
+    // Clean up temporary file
+    fs.unlinkSync(filePath);
+    
+    return supabaseUrl;
+    
+  } catch (error) {
+    console.error('❌ Supabase upload failed:', error.message);
+    
+    // Clean up temporary file if it exists
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+    
+    throw new Error(`Image upload failed: ${error.message}`);
+  }
+};
+
+// Helper functions for different upload fields
+const handleImageUpload = (fieldName) => async (req, res, next) => {
+  upload.single(fieldName)(req, res, async (error) => {
+    if (error) {
+      console.error(`Upload error for ${fieldName}:`, error.message);
+      return res.status(400).json({ error: error.message });
+    }
+    
+    if (!req.file) {
+      return next(); // No file uploaded, continue
+    }
+    
+    try {
+      // Upload to cloud and get URL
+      const cloudUrl = await uploadToCloud(req.file.path, req.file.originalname);
+      
+      // Replace file info with cloud URL
+      req.file.path = cloudUrl;
+      req.file.cloudUrl = cloudUrl;
+      
+      console.log(`✅ ${fieldName} uploaded successfully:`, cloudUrl);
+      next();
+      
+    } catch (uploadError) {
+      console.error(`Cloud upload failed for ${fieldName}:`, uploadError.message);
+      res.status(500).json({ error: uploadError.message });
+    }
+  });
+};
+
+const handleFileUpload = handleImageUpload('image');
+const handlePhotoUpload = handleImageUpload('photo');
+const handleLogoUpload = handleImageUpload('logo');
 
 // Routes
 
@@ -180,10 +300,23 @@ app.get('/api/products/:id', async (req, res) => {
 });
 
 // Add new product (protected)
-app.post('/api/products', requireAuth, upload.single('image'), async (req, res) => {
+app.post('/api/products', requireAuth, handleFileUpload, async (req, res) => {
   try {
+    console.log('Product creation attempt:', {
+      hasFile: !!req.file,
+      fileInfo: req.file ? {
+        originalname: req.file.originalname,
+        path: req.file.path,
+        size: req.file.size
+      } : 'No file'
+    });
+
     const { name, description, ingredients, benefits, usage, price } = req.body;
-    const image = req.file ? `/uploads/${req.file.filename}` : '';
+    const image = req.file ? req.file.path : ''; // Cloudinary URL is in req.file.path
+
+    if (req.file) {
+      console.log('File uploaded to Cloudinary:', req.file.path);
+    }
 
     const product = new Product({
       name,
@@ -196,29 +329,54 @@ app.post('/api/products', requireAuth, upload.single('image'), async (req, res) 
     });
 
     await product.save();
+    console.log('Product created successfully:', product.name);
     res.json(product);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Product creation error:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
+    res.status(500).json({ error: error.message || 'Failed to create product' });
   }
 });
 
 // Update product (protected)
-app.put('/api/products/:id', requireAuth, upload.single('image'), async (req, res) => {
+app.put('/api/products/:id', requireAuth, handleFileUpload, async (req, res) => {
   try {
+    console.log('Product update attempt:', {
+      productId: req.params.id,
+      hasFile: !!req.file,
+      fileInfo: req.file ? {
+        originalname: req.file.originalname,
+        path: req.file.path,
+        size: req.file.size
+      } : 'No file'
+    });
+
     const { name, description, ingredients, benefits, usage, price } = req.body;
     const updateData = { name, description, ingredients, benefits, usage, price };
 
     if (req.file) {
-      updateData.image = `/uploads/${req.file.filename}`;
+      console.log('File uploaded to Cloudinary:', req.file.path);
+      updateData.image = req.file.path; // Cloudinary URL is in req.file.path
     }
 
     const product = await Product.findByIdAndUpdate(req.params.id, updateData, { new: true });
     if (!product) {
       return res.status(404).json({ error: 'Product not found' });
     }
+    
+    console.log('Product updated successfully:', product.name);
     res.json(product);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Product update error:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+      productId: req.params.id
+    });
+    res.status(500).json({ error: error.message || 'Failed to update product' });
   }
 });
 
@@ -275,7 +433,7 @@ app.get('/api/brand', async (req, res) => {
 });
 
 // Update doctor profile (protected)
-app.put('/api/doctor', requireAuth, upload.single('photo'), async (req, res) => {
+app.put('/api/doctor', requireAuth, handlePhotoUpload, async (req, res) => {
   try {
     const { name, contact, email, address, bio } = req.body;
     let doctor = await Doctor.findOne();
@@ -283,7 +441,7 @@ app.put('/api/doctor', requireAuth, upload.single('photo'), async (req, res) => 
     const updateData = { name, contact, email, address, bio };
     
     if (req.file) {
-      updateData.photo = `/uploads/${req.file.filename}`;
+      updateData.photo = req.file.path; // Cloudinary URL is in req.file.path
     }
     
     if (!doctor) {
@@ -300,7 +458,7 @@ app.put('/api/doctor', requireAuth, upload.single('photo'), async (req, res) => 
 });
 
 // Update brand settings (protected)
-app.put('/api/brand', requireAuth, upload.single('logo'), async (req, res) => {
+app.put('/api/brand', requireAuth, handleLogoUpload, async (req, res) => {
   try {
     const { name, tagline } = req.body;
     let brand = await Brand.findOne();
@@ -308,7 +466,7 @@ app.put('/api/brand', requireAuth, upload.single('logo'), async (req, res) => {
     const updateData = { name, tagline };
     
     if (req.file) {
-      updateData.logo = `/uploads/${req.file.filename}`;
+      updateData.logo = req.file.path; // Cloudinary URL is in req.file.path
     }
     
     if (!brand) {
@@ -361,6 +519,36 @@ app.put('/api/admin/password', requireAuth, async (req, res) => {
     console.error('Password change error:', error);
     res.status(500).json({ error: 'Failed to update password' });
   }
+});
+
+// Global error handlers
+app.use((error, req, res, next) => {
+  console.error('Global error handler caught:', {
+    message: error.message,
+    stack: error.stack,
+    name: error.name
+  });
+  
+  if (error instanceof multer.MulterError) {
+    return res.status(400).json({ 
+      error: `Upload error: ${error.message}` 
+    });
+  }
+  
+  if (error.name === 'ValidationError') {
+    return res.status(400).json({ 
+      error: `Validation error: ${error.message}` 
+    });
+  }
+  
+  res.status(500).json({ 
+    error: 'Internal server error occurred' 
+  });
+});
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({ error: 'Route not found' });
 });
 
 // Start server

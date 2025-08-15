@@ -99,18 +99,6 @@
         if (urlParams.get('error') === '1') {
             document.getElementById('error-message').classList.remove('hidden');
         }
-
-        // Auto-fill demo credentials for easy access
-        document.addEventListener('DOMContentLoaded', function() {
-            const usernameField = document.getElementById('username');
-            const passwordField = document.getElementById('password');
-            
-            // Fill demo credentials after 1 second for demonstration
-            setTimeout(() => {
-                usernameField.value = 'doctor';
-                passwordField.value = 'ayurveda123';
-            }, 1000);
-        });
     </script>
 </body>
 </html>
